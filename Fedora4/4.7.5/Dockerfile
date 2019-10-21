@@ -95,22 +95,6 @@ COPY config/schema.xml $SOLR_HOME/collection1/conf/
 
 RUN chown -hR tomcat7:tomcat7 $SOLR_HOME
 
-# Install Fuseki
-ENV FUSEKI_VERSION 2.3.1
-ENV FUSEKI_BASE /etc/fuseki
-ENV FUSEKI_DEPLOY /usr/local/tomcat7/webapps
-
-RUN cd && mkdir -p "$FUSEKI_BASE" \ 
-	&& mkdir -p "$FUSEKI_BASE"/configuration \
-	&& chown -hR tomcat7:tomcat7 $FUSEKI_BASE \
-	&& cd /tmp \
-
-COPY config/shiro.ini /root/
-COPY config/test.ttl /root/
-
-RUN cp /root/shiro.ini  /etc/fuseki/. \
-	&& cp /root/test.ttl  /etc/fuseki/configuration/.
-
 # Install Apache Karaf
 ENV KARAF_VERSION 4.0.5
 
