@@ -1,6 +1,6 @@
-# Fedora 4 Docker Repo
+# Fedora 4/GraphDB Docker Repo
 
-This is the Git repo of the Docker image for [Fedora 4 docker](https://hub.docker.com/r/yinlinchen/fcrepo4-docker/). Please see the [Hub page](https://hub.docker.com/r/yinlinchen/fcrepo4-docker/) for the full readme on how to use the Docker image and for information regarding contributing and issues.
+This is a fork of the Git repo of the Docker image for [Fedora 5 docker](https://hub.docker.com/r/yinlinchen/fcrepo4-docker/). It uses the latest Fedora 4.7.z release in order support development for (ActiveFedora)[https://github.com/samvera/active_fedora] (which, current is only tested against (Fedora 4.y releases)[https://github.com/samvera-labs/samvera-circleci-orb/blob/master/src/executors/ruby_fcrepo_solr.yml#L17]).  Please see the [Hub page](https://hub.docker.com/r/yinlinchen/fcrepo4-docker/) for the full readme on how to use the Docker image and for information regarding contributing and issues. It is also configured for synchronization with GraphDB.
 
 ## Requirements
 
@@ -8,62 +8,73 @@ This is the Git repo of the Docker image for [Fedora 4 docker](https://hub.docke
 
 ## Usage
 
-1. `docker pull yinlinchen/fcrepo4-docker`
-2. `docker run -it -p 8080:8080 -d yinlinchen/fcrepo4-docker:4.7.5`
-3. Use `docker ps` to check the "CONTAINER ID" and "STATUS". The container should be ready to use after 5 minutes.
+### With GraphDB
+By default Fedora is configured to synchronize with GraphDB with its resource 
+index. The GraphDB installation is assumed to be hosted at URL ``http://localhost:7200/repositories/fcrepo/statements`. 
+This may be overidden by using the environment variable `TRIPLESTORE_BASE_URL`:
+```bash
+TRIPLESTORE_BASE_URL=http://graphs.net:7200/repositories/mygraph/statements docker-compose up -d
+```
+
+Run Fedora with a file-based objects database:
+```
+FEDORA_TAG=4.7.5 docker-compose up -d
+
+# Shutdown server
+docker-compose down
+```
+
+Run Fedora(e.g. 4.7.5) with a MySQL database:
+```
+# Start server
+FEDORA_TAG=4.7.5 docker-compose -f fcrepo-mysql.yml up -d
+
+# Shutdown server
+docker-compose -f fcrepo-mysql.yml down
+```
+
+Run Fedora(e.g. 4.7.5) with a PostgreSQL database:
+```
+# Start server
+FEDORA_TAG=4.7.5 docker-compose -f fcrepo-postgres.yml up -d
+
+# Shutdown server
+docker-compose -f fcrepo-postgres.yml down
+```
+
+Run Fedora(e.g. 4.7.5) with Camel Toolbox customizations:
+```
+# Start server
+FEDORA_TAG=4.7.5 docker-compose -f fcrepo-camel.yml up -d
+
+# Shutdown server
+docker-compose -f fcrepo-camel.yml down
+```
+ * See [Camel](docker/services/fcrepo-camel) section for details.
+
+# Rebuild the docker image and start the Fedora (e.g. 4.7.5) server
+```
+FEDORA_TAG=4.7.5 docker-compose up -d --force-recreate --build
+```
+Fedora [Dockerfile](docker/services/fcrepo/Dockerfile)
 
 You can shell into the machine with `docker exec -i -t "CONTAINER ID" /bin/bash`
 
-## In this Docker image
+## In this Docker image, see detail in [Dockerfile](docker/services/fcrepo/Dockerfile)
 
-* Ubuntu 14.04 64-bit machine with: 
-  * [Tomcat 7.0.72](https://tomcat.apache.org) at [http://localhost:8080](http://localhost:8080)
+  * [Tomcat 8.0.53](https://tomcat.apache.org) at [http://localhost:8080](http://localhost:8080)
     * Manager username = "fedora4", password = "fedora4"
   * [Fedora 4.7.5](https://wiki.duraspace.org/display/FF/Downloads) at [http://localhost:8080/fcrepo](http://localhost:8080/fcrepo)
-    * No authentication configured
-  * [Solr 4.10.3](https://lucene.apache.org/solr/) at [http://localhost:8080/solr](http://localhost:8080/solr), for indexing & searching your content.
-    * Installed in "/usr/local/tomcat7/solr"
-  * [Apache Karaf 4.0.5](http://karaf.apache.org/)
-    Installed in /opt/karaf
-    Installed as a service apache-karaf
-  * [Fuseki 2.3.1](https://jena.apache.org/documentation/serving_data/index.html) at [http://localhost:8080/fuseki](http://localhost:8080/fuseki), for querying and updating.
-    * Installed in "/etc/fuseki"
-    * Dataset Path name "/test"
-    * Persistent storage "/etc/fuseki/databases/test_data"
-  * [Fcrepo-camel-toolbox 4.7.2](https://github.com/fcrepo4-labs/fcrepo-camel-toolbox)
-    * Installed in Tomcat container
+    * username = "fedoraAdmin", password = "secret3"
 
   ps. MacOS: docker is configured to use the default machine with IP e.g. 192.168.99.100 or 127.0.0.1, the Fedora 4 URL is either [http://192.168.99.100:8080/fcrepo](http://192.168.99.100:8080/fcrepo) or [http://127.0.0.1/fcrepo](http://127.0.0.1/fcrepo). You can use "docker-machine ip" to see your docker machine IP.
 
-
-## Fedora Configuration
-The default Docker build is Fedora 4 without WebAC and Audit capability.
-```
-docker build -t="4.7.5-default" .
-```
-
-To enable Fedora 4 with WebAC enabled.
-```
-docker build --build-arg FedoraConfig=webac- --build-arg ModeshapeConfig=servlet-auth -t="4.7.5-webac" .
-```
-Three Fedora user accounts are available:
-  * user account testuser, with password password1
-  * user account adminuser, with password password2
-  * admin account fedoraAdmin with the password secret3
-
-To enable Fedora 4 with Audit capability. 
-```
-docker build --build-arg FedoraConfig=audit- -t="4.7.5-audit" .
-```
-
-To enable Fedora 4 with WebAC and Audit capability.
-```
-docker build --build-arg FedoraConfig=webac-audit- --build-arg ModeshapeConfig=servlet-auth -t="4.7.5-webac-audit" .
-```
-
 ## Maintainers
 
-Current maintainers:
+Current maintainers (for this fork):
 
+* [James Griffin](https://github.com/jrgriffiniii)
+
+Current maintainers (for the original project):
 * [Yinlin Chen](https://github.com/yinlinchen)
-* [Paul Mather](https://github.com/pmather)
+
