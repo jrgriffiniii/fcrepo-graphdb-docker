@@ -10,11 +10,7 @@ This is a fork of the Git repo of the Docker image for [Fedora 5 docker](https:/
 
 ### With GraphDB
 By default Fedora is configured to synchronize with GraphDB with its resource 
-index. The GraphDB installation is assumed to be hosted at URL ``http://localhost:7200/repositories/fcrepo/statements`. 
-This may be overidden by using the environment variable `TRIPLESTORE_BASE_URL`:
-```bash
-TRIPLESTORE_BASE_URL=http://graphs.net:7200/repositories/mygraph/statements docker-compose up -d
-```
+index. The GraphDB installation is assumed to be hosted at URL ``http://localhost:7200/repositories/fcrepo/statements`. Please edit this in `config/org.fcrepo.camel.indexing.triplestore.cfg` in order to update this URL.
 
 Run Fedora with a file-based objects database:
 ```
